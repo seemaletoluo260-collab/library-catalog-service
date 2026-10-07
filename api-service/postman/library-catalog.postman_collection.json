@@ -1,0 +1,109 @@
+{
+  "info": {
+    "_postman_id": "6d9917a8-e8d2-47d8-a98b-43f8d2cfa150",
+    "name": "Library Catalog API",
+    "description": "Book and Genre CRUD, filtering, search, pagination, and validation examples.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:3000/api/v1" },
+    { "key": "genreId", "value": "64a1b2c3d4e5f67890123456" },
+    { "key": "bookId", "value": "64a1b2c3d4e5f67890123457" }
+  ],
+  "item": [
+    {
+      "name": "Genres",
+      "item": [
+        { "name": "List genres", "request": { "method": "GET", "url": "{{baseUrl}}/genres" } },
+        {
+          "name": "Create genre",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Science Fiction\",\n  \"description\": \"Speculative fiction\"\n}", "options": { "raw": { "language": "json" } } },
+            "url": "{{baseUrl}}/genres"
+          }
+        },
+        { "name": "Get genre", "request": { "method": "GET", "url": "{{baseUrl}}/genres/{{genreId}}" } },
+        {
+          "name": "Update genre",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Science Fiction\",\n  \"description\": \"Updated description\"\n}", "options": { "raw": { "language": "json" } } },
+            "url": "{{baseUrl}}/genres/{{genreId}}"
+          }
+        },
+        { "name": "Delete genre (409 if referenced)", "request": { "method": "DELETE", "url": "{{baseUrl}}/genres/{{genreId}}" } }
+      ]
+    },
+    {
+      "name": "Books",
+      "item": [
+        {
+          "name": "List books (combined filters and pagination)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/books?genre={{genreId}}&search=dune&page=2&limit=5",
+              "host": ["{{baseUrl}}"],
+              "path": ["books"],
+              "query": [
+                { "key": "genre", "value": "{{genreId}}" },
+                { "key": "search", "value": "dune" },
+                { "key": "page", "value": "2" },
+                { "key": "limit", "value": "5" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create book",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"title\": \"Dune\",\n  \"author\": \"Frank Herbert\",\n  \"isbn\": \"9780441172719\",\n  \"genre\": \"{{genreId}}\"\n}", "options": { "raw": { "language": "json" } } },
+            "url": "{{baseUrl}}/books"
+          }
+        },
+        {
+          "name": "Create book (invalid input example)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{}", "options": { "raw": { "language": "json" } } },
+            "url": "{{baseUrl}}/books"
+          },
+          "response": [
+            {
+              "name": "400 Validation failed",
+              "originalRequest": {
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": { "mode": "raw", "raw": "{}" },
+                "url": "{{baseUrl}}/books"
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json; charset=utf-8" }],
+              "cookie": [],
+              "body": "{\n  \"message\": \"Validation failed\",\n  \"errors\": {\n    \"title\": \"Invalid input: expected string, received undefined\",\n    \"author\": \"Invalid input: expected string, received undefined\",\n    \"isbn\": \"Invalid input: expected string, received undefined\",\n    \"genre\": \"Invalid input: expected string, received undefined\"\n  }\n}"
+            }
+          ]
+        },
+        { "name": "Get book", "request": { "method": "GET", "url": "{{baseUrl}}/books/{{bookId}}" } },
+        {
+          "name": "Update book",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"title\": \"Dune Messiah\",\n  \"author\": \"Frank Herbert\",\n  \"isbn\": \"9780441172696\",\n  \"genre\": \"{{genreId}}\"\n}", "options": { "raw": { "language": "json" } } },
+            "url": "{{baseUrl}}/books/{{bookId}}"
+          }
+        },
+        { "name": "Delete book", "request": { "method": "DELETE", "url": "{{baseUrl}}/books/{{bookId}}" } }
+      ]
+    }
+  ]
+}

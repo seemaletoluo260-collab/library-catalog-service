@@ -32,6 +32,10 @@ The seed script inserts five genres and twenty books. Each book has a valid ISBN
 | `totalCopies`, `availableCopies` | Embedded numbers | Inventory values are specific to the catalog's book record and are commonly read together. Updating both in one document is straightforward; a production checkout system may instead model individual copies or use atomic update rules to prevent concurrent over-checkouts. |
 | `genre` | Reference to `Genre` via ObjectId | Many books can share one genre, and genre names/slugs should have one authoritative copy. Referencing avoids repeating those values and lets a genre change apply consistently, with the trade-off of a populate/join when genre details are needed. |
 
+## Catalog API
+
+The standalone Express and TypeScript API is in [`api-service/`](api-service/README.md). Configure its `Database_URL` in `api-service/.env`, then install dependencies and run it from that directory with `npm install` and `npm run dev`. Its importable Postman collection is [`api-service/postman/library-catalog.postman_collection.json`](api-service/postman/library-catalog.postman_collection.json).
+
 ## Collections and screenshots
 
 Mongoose creates the `books` and `genres` collections from the model names. After running the seed command against your Atlas database, open each collection in Atlas and capture a screenshot showing the document list and count. Save the screenshots in this repository (for example, `screenshots/books.png` and `screenshots/genres.png`) before submission. Screenshots must come from the populated Atlas database; this project does not include fabricated database images.
