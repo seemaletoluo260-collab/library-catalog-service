@@ -24,6 +24,30 @@ describe("GET /api/v1/emojis", () => {
       .expect(200, ["😀", "😳", "🙄"]));
 });
 
+describe("Credentialed frontend CORS", () => {
+  it("allows the configured frontend origin to send auth cookies", async () => {
+    const response = await request(app)
+      .options("/api/auth/login")
+      .set("Origin", "http://localhost:5173")
+      .set("Access-Control-Request-Method", "POST")
+      .expect(204);
+
+    expect(response.headers["access-control-allow-origin"]).toBe("http://localhost:5173");
+    expect(response.headers["access-control-allow-credentials"]).toBe("true");
+  });
+
+  it("does not grant credentialed CORS access to an unconfigured origin", async () => {
+    const response = await request(app)
+      .options("/api/auth/login")
+      .set("Origin", "https://untrusted.example")
+      .set("Access-Control-Request-Method", "POST")
+      .expect(200);
+
+    expect(response.headers["access-control-allow-origin"]).toBeUndefined();
+    expect(response.headers["access-control-allow-credentials"]).toBeUndefined();
+  });
+});
+
 describe("Book input validation", () => {
   const librarianToken = signToken("64a1b2c3d4e5f67890123456", "librarian");
 

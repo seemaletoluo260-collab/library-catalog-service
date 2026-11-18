@@ -1,6 +1,6 @@
 # Library Catalog API
 
-Express 5 and TypeScript API for managing books, genres, and users. Copy `.env.example` to `.env`, set `Database_URL` to a MongoDB connection string, and set a unique `JWT_SECRET` of at least 32 characters before starting the server. In development the API is available under `/api`; the existing `/api/v1` prefix is also supported.
+Express 5 and TypeScript API for managing books, genres, and users. Copy `.env.example` to `.env`, set `Database_URL` to a MongoDB connection string, set a unique `JWT_SECRET` of at least 32 characters, and set `CORS_ORIGINS` to a comma-separated allowlist of exact frontend origins before starting the server. The default local frontend origin is `http://localhost:5173`. In development the API is available under `/api`; the existing `/api/v1` prefix is also supported.
 
 ## Setup
 
