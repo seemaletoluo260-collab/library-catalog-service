@@ -34,7 +34,15 @@ The seed script inserts five genres and twenty books. Each book has a valid ISBN
 
 ## Catalog API
 
-The standalone Express and TypeScript API is in [`api-service/`](api-service/README.md). Configure its `Database_URL` in `api-service/.env`, then install dependencies and run it from that directory with `npm install` and `npm run dev`. Its importable Postman collection is [`api-service/postman/library-catalog.postman_collection.json`](api-service/postman/library-catalog.postman_collection.json).
+The standalone Express and TypeScript API is in [`api-service/`](api-service/README.md). Copy `api-service/.env.example` to `api-service/.env`, set `Database_URL` to your MongoDB connection string and replace `JWT_SECRET` with a unique secret of at least 32 characters. From that directory, run `npm install` and `npm run dev`. Its importable Postman collection is [`api-service/postman/library-catalog.postman_collection.json`](api-service/postman/library-catalog.postman_collection.json). Routes are available under `/api`; the existing `/api/v1` prefix remains supported.
+
+Run `npm run seed` from the repository root to seed the catalog and one test librarian account. Test credentials: `librarian@library.local` / `LibraryLibrarian123!`. The seed hashes the password before saving it. This known password is for local testing only; change or remove the account before deploying a shared or production database.
+
+## Token Storage
+
+The API stores the signed JWT in an `authToken` cookie marked `HttpOnly`, `SameSite=Strict`, and `Secure` in production. Browser JavaScript cannot read an `HttpOnly` cookie, so an injected script has a harder time stealing a reusable token than it would with a token kept in `localStorage`; XSS can still issue actions from the victim's browser, so output encoding and content-security controls remain important. The cookie is sent automatically with matching requests, which avoids copying credentials into application code. The trade-off is that cookie authentication can introduce cross-site request forgery (CSRF): `SameSite=Strict` limits cross-site cookie sending, and the API does not enable credentialed cross-origin requests by default. A deployment that requires cross-site cookies would need to use `SameSite=None; Secure`, allow credentials only from its exact trusted origin, and add an explicit CSRF defense.
+
+The JWT expires after one hour. `POST /api/auth/logout` clears the browser cookie; this is client-side logout, not a server-side token blocklist, so a copied token remains usable until it expires. This avoids maintaining session state in the database, but means immediate revocation would require adding a blocklist or changing the signing key. Registration assigns the `patron` role and does not accept a client-selected role. Book writes require the librarian role. `GET /api/users/profile` derives the account id from the verified token and returns only the caller's username, email, and role.
 
 ## Collections and screenshots
 

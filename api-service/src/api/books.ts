@@ -2,6 +2,7 @@ import express from "express";
 import { z } from "zod/v4";
 
 import * as middlewares from "../middlewares.js";
+import { requireAuth, requireRole } from "../middlewares/auth.js";
 import Book, { bookInputSchema } from "../schemas/book.js";
 import Genre from "../schemas/genre.js";
 
@@ -74,7 +75,7 @@ router.get("/:id", async (req, res, next) => {
   }
 });
 
-router.post("/", middlewares.validateBody(bookInputSchema), async (req, res, next) => {
+router.post("/", requireAuth, requireRole("librarian"), middlewares.validateBody(bookInputSchema), async (req, res, next) => {
   try {
     if (!await Genre.exists({ _id: req.body.genre }))
       return res.status(400).json({ message: "Validation failed", errors: { genre: "Genre does not exist" } });
@@ -86,7 +87,7 @@ router.post("/", middlewares.validateBody(bookInputSchema), async (req, res, nex
   }
 });
 
-router.put("/:id", middlewares.validateBody(bookInputSchema), async (req, res, next) => {
+router.put("/:id", requireAuth, requireRole("librarian"), middlewares.validateBody(bookInputSchema), async (req, res, next) => {
   if (!validId(req.params.id))
     return invalidId(res);
   try {
@@ -102,7 +103,7 @@ router.put("/:id", middlewares.validateBody(bookInputSchema), async (req, res, n
   }
 });
 
-router.delete("/:id", async (req, res, next) => {
+router.delete("/:id", requireAuth, requireRole("librarian"), async (req, res, next) => {
   if (!validId(req.params.id))
     return invalidId(res);
   try {
