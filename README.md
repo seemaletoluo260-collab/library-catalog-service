@@ -44,6 +44,12 @@ The API stores the signed JWT in an `authToken` cookie marked `HttpOnly`, `SameS
 
 The JWT expires after one hour. `POST /api/auth/logout` clears the browser cookie; this is client-side logout, not a server-side token blocklist, so a copied token remains usable until it expires. This avoids maintaining session state in the database, but means immediate revocation would require adding a blocklist or changing the signing key. Registration assigns the `patron` role and does not accept a client-selected role. Book writes require the librarian role. `GET /api/users/profile` derives the account id from the verified token and returns only the caller's username, email, and role.
 
+## Borrowing and space bookings
+
+Authenticated patrons can request a book from their saved reading list. The API rejects missing books and books with zero available copies, assigns a 14-day due date, and records the user from the login cookie. A librarian marks a request returned; the server calculates **$0.25 per started 24-hour period after the due time**, rounded to cents, so clients cannot choose the fine. Librarian pages display the current borrow requests and server-calculated balances.
+
+Space bookings are also checked by the API before they are saved. For the same space and date, a request is rejected if its start is before an existing booking's end and its end is after the existing booking's start. This catches partial as well as fully contained overlaps; two bookings that touch only at the boundary are allowed. The admin pages list catalog books, borrow requests, and bookings from the API.
+
 ## Collections and screenshots
 
 Mongoose creates the `books` and `genres` collections from the model names. After running the seed command against your Atlas database, open each collection in Atlas and capture a screenshot showing the document list and count. Save the screenshots in this repository (for example, `screenshots/books.png` and `screenshots/genres.png`) before submission. Screenshots must come from the populated Atlas database; this project does not include fabricated database images.

@@ -1,8 +1,11 @@
 import request from "supertest";
 import { describe, expect, it } from "vitest";
 
+import { timeRangesOverlap } from "../src/api/bookings.js";
+import { calculateFine } from "../src/api/borrow-requests.js";
 import app from "../src/app.js";
 import { signToken } from "../src/auth/token.js";
+import { borrowRequestStatusSchema } from "../src/schemas/borrow-request.js";
 
 describe("GET /api/v1", () => {
   it("responds with a json message", () =>
@@ -86,6 +89,45 @@ describe("Authentication and book authorization", () => {
     ["DELETE", "/api/books/64a1b2c3d4e5f67890123456"],
   ] as const)("rejects anonymous %s %s requests", async (method, path) => {
     await request(app)[method.toLowerCase() as "post" | "put" | "delete"](path).expect(401);
+  });
+
+  describe("Borrow requests and booking rules", () => {
+    it("calculates fines by started 24-hour overdue period at a fixed daily rate", () => {
+      const dueAt = new Date("2026-03-10T18:45:00.000Z");
+      expect(calculateFine(dueAt, new Date("2026-03-10T18:45:00.000Z"))).toBe(0);
+      expect(calculateFine(dueAt, new Date("2026-03-10T18:45:01.000Z"))).toBe(0.25);
+      expect(calculateFine(dueAt, new Date("2026-03-12T18:45:01.000Z"))).toBe(0.75);
+    });
+
+    it("ignores client-supplied fine values when validating status updates", () => {
+      expect(borrowRequestStatusSchema.parse({ status: "returned", fine: 999 })).toEqual({ status: "returned" });
+    });
+
+    it("detects partial booking overlaps while allowing adjacent time ranges", () => {
+      expect(timeRangesOverlap("10:30", "11:30", "10:00", "11:00")).toBe(true);
+      expect(timeRangesOverlap("09:30", "10:30", "10:00", "11:00")).toBe(true);
+      expect(timeRangesOverlap("09:00", "10:00", "10:00", "11:00")).toBe(false);
+      expect(timeRangesOverlap("11:00", "12:00", "10:00", "11:00")).toBe(false);
+    });
+
+    it("requires a librarian to change a borrow request status", async () => {
+      const path = "/api/borrow-requests/64a1b2c3d4e5f67890123456";
+      await request(app).patch(path).send({ status: "returned" }).expect(401);
+
+      const patronToken = signToken("64a1b2c3d4e5f67890123456", "patron");
+      await request(app)
+        .patch(path)
+        .set("Cookie", `authToken=${patronToken}`)
+        .send({ status: "returned" })
+        .expect(403);
+    });
+
+    it("requires authentication to create a borrow request", async () => {
+      await request(app)
+        .post("/api/borrow-requests")
+        .send({ bookId: "64a1b2c3d4e5f67890123456" })
+        .expect(401);
+    });
   });
 
   it.each([
