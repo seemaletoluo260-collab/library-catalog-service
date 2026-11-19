@@ -6,10 +6,6 @@ import Booking, { bookingInputSchema } from "../schemas/booking.js";
 
 const router = express.Router();
 
-export function timeRangesOverlap(startTime: string, endTime: string, existingStartTime: string, existingEndTime: string): boolean {
-  return startTime < existingEndTime && endTime > existingStartTime;
-}
-
 router.get("/", requireAuth, requireRole("librarian"), async (_req, res, next) => {
   try {
     const bookings = await Booking.find()

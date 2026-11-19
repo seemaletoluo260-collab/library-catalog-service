@@ -20,6 +20,12 @@ app.use(cors({
   },
   credentials: true,
 }));
+app.use((req, res, next) => {
+  const origin = req.get("Origin");
+  if (origin && !allowedOrigins.has(origin) && !["GET", "HEAD", "OPTIONS"].includes(req.method))
+    return res.status(403).json({ message: "Origin is not allowed" });
+  return next();
+});
 app.use(express.json());
 app.get<object, MessageResponse>("/", (req, res) => {
   res.json({

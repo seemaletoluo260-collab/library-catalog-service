@@ -16,7 +16,7 @@ function setAuthCookie(res: express.Response, token: string) {
   res.cookie("authToken", token, {
     httpOnly: true,
     secure: env.NODE_ENV === "production",
-    sameSite: "strict",
+    sameSite: env.NODE_ENV === "production" ? "none" : "strict",
     path: "/",
     maxAge: 60 * 60 * 1000,
   });
@@ -65,7 +65,7 @@ router.post("/logout", (_req, res) => {
   res.clearCookie("authToken", {
     httpOnly: true,
     secure: env.NODE_ENV === "production",
-    sameSite: "strict",
+    sameSite: env.NODE_ENV === "production" ? "none" : "strict",
     path: "/",
   });
   return res.status(204).end();
