@@ -4,6 +4,7 @@ const envSchema = z.object({
   NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
   PORT: z.coerce.number().default(3000),
   JWT_SECRET: z.string().min(32).default("development-only-change-this-secret-32"),
+  CORS_ORIGINS: z.string().default("http://localhost:5173"),
 }).superRefine((values, context) => {
   if (values.NODE_ENV === "production" && values.JWT_SECRET === "development-only-change-this-secret-32") {
     context.addIssue({

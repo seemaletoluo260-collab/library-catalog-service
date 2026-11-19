@@ -3,7 +3,9 @@ import express from "express";
 import type MessageResponse from "../interfaces/message-response.js";
 
 import auth from "./auth.js";
+import bookings from "./bookings.js";
 import books from "./books.js";
+import borrowRequests from "./borrow-requests.js";
 import emojis from "./emojis.js";
 import genres from "./genres.js";
 import users from "./users.js";
@@ -18,7 +20,9 @@ router.get<object, MessageResponse>("/", (req, res) => {
 
 router.use("/emojis", emojis);
 router.use("/auth", auth);
+router.use("/bookings", bookings);
 router.use("/users", users);
 router.use("/books", books);
+router.use("/borrow-requests", borrowRequests);
 router.use("/genres", genres);
 export default router;
